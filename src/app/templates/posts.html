@@ -1,0 +1,52 @@
+<body>
+<div class="container-fluid main-cont">
+  <div class="row">
+    <div class="col-md-3 profile">
+      <aside>
+        <img src="../../img/cat.jpg" alt="Cat image" class="img-circle">
+        <h4>Yauhen Penkin</h4>
+        <p>Podsos eng. @PODSOS</p>
+        <hr>
+        <!---------------------------for debugging---------------------------------->
+        <!--<button ng-click="showPosts()">Show posts</button>-->
+        <!--<button ng-click="showPostsId()">Show posts IDs</button>-->
+        <!--<button ng-click="showCommentsId()">Show comments IDs</button>-->
+        <!--<button ng-click="CommentsCount()">Show comments number</button>-->
+        <!------------------------------------------------------------->
+        <p>Share this page:</p>
+        <ul class="clearfix">
+          <li><a href="https://www.facebook.com/penkin.evgeniy"><i class="fa fa-facebook-square" aria-hidden="true"></i></a>
+          </li>
+          <li><a href="https://github.com/32penkin/"><i class="fa fa-github" aria-hidden="true"></i></a></li>
+          <li><a href="https://twitter.com/penkin.evgeniy"><i class="fa fa-twitter-square" aria-hidden="true"></i></a>
+          </li>
+          <li><a href="penkin.evgeniy@gmail.com"><i class="fa fa-at" aria-hidden="true"></i></a></li>
+        </ul>
+      </aside>
+    </div>
+    <div class="col-md-8 all-posts">
+      <!--<article ng-repeat="post in posts">-->
+      <h1 ng-if="posts.length === 0" class="posts-count-header">There are no posts</h1>
+      <h1 ng-if="posts.length === 1" class="posts-count-header">There are 1 post:</h1>
+      <h1 ng-if="posts.length !== 0 && posts.length !== 1" class="posts-count-header">There are {{posts.length}}
+        posts</h1>
+      <article dir-paginate="post in posts | itemsPerPage: 3">
+      <!--<article ng-repeat="post in posts">-->
+        <header class="post-info"><a href="#!/posts/{{post._id}}"><h2>{{post.name}}</h2></a></header>
+        <footer class="post-date">
+          <small><b>Posted on: </b> {{post.date}}</small>
+          <br>
+          <small ng-if="post.commentsCount === 0">Haven't commented yet</small>
+          <small ng-if="post.commentsCount === 1">Commented <b>once</b></small>
+          <small ng-if="post.commentsCount !== 0 && post.commentsCount !== 1">Commented <b>{{post.commentsCount}}</b> times</small>
+        </footer>
+
+        <div class="lead">{{post.content}}<a href="#!/posts/{{post._id}}"> Read more</a>
+        </div>
+        <hr>
+      </article>
+      <dir-pagination-controls></dir-pagination-controls>
+    </div>
+  </div>
+</div>
+</body>

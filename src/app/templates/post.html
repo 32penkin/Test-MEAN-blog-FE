@@ -1,0 +1,54 @@
+<div class="container-fluid main-cont">
+  <div class="row">
+    <div class="col-md-3 profile">
+      <aside>
+        <img src="../../img/cat.jpg" alt="Cat image" class="img-circle">
+        <h4>Yauhen Penkin</h4>
+        <p>Podsos eng. @PODSOS</p>
+        <hr>
+        <p>Share this page:</p>
+        <ul class="clearfix">
+          <li><a href="https://www.facebook.com/penkin.evgeniy"><i class="fa fa-facebook-square" aria-hidden="true"></i></a>
+          </li>
+          <li><a href="https://github.com/32penkin/"><i class="fa fa-github" aria-hidden="true"></i></a></li>
+          <li><a href="https://twitter.com/penkin.evgeniy"><i class="fa fa-twitter-square" aria-hidden="true"></i></a>
+          </li>
+          <li><a href="penkin.evgeniy@gmail.com"><i class="fa fa-at" aria-hidden="true"></i></a></li>
+        </ul>
+      </aside>
+    </div>
+    <div class="col-md-8">
+      <article>
+        <h1>{{post.name}}</h1>
+        <div class="lead">{{post.content}}</div>
+      </article>
+      <hr class="line">
+      <div class="for-comments">
+        <h3 ng-if="comments.length !== 0">Comments:</h3>
+        <div class="row">
+          <div ng-repeat="comment in comments" class="comments">
+            <comment name="comment.name" content="comment.content" date="comment.date"></comment>
+          </div>
+          <form>
+            <h3>Have your say</h3>
+            <p>
+              <label class="sr-only">Message</label>
+              <textarea ng-model="comCont" class="form-control" placeholder="Message" id="message" required
+                        autocomplete="off"></textarea>
+            </p>
+            <p>
+              <label class="sr-only">Full Name</label>
+              <input ng-model="comName" type="text" class="form-control" placeholder="Full Name" required>
+            </p>
+            <!--<p>-->
+              <!--<label class="sr-only">Email Address</label>-->
+              <!--<input type="email" class="form-control" placeholder="Email Address" required>-->
+            <!--</p>-->
+            <p>
+              <button ng-click="addNewComment()" class="btn btn-primary">Send messsage</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

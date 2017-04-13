@@ -1,0 +1,21 @@
+$fa-font-path: '~font-awesome/fonts';
+@import '~font-awesome/scss/font-awesome';
+
+body {
+  div {
+    div {
+      .navbar-header {
+      }
+      .collapse {
+        .left {
+        }
+        .right {
+          padding-right: 20px;
+          li {
+          }
+        }
+      }
+    }
+  }
+  ng-view {}
+}

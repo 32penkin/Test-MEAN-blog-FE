@@ -1,0 +1,45 @@
+body {
+  .main-cont {
+    max-width: 1000px;
+    margin-top: 100px;
+    .row {
+      .profile {
+        margin-right: 40px;
+        height: 100%;
+        aside {
+          ul {
+            list-style: none;
+            padding: 0;
+            li {
+              float: left;
+              margin-right: 12px;
+              a {
+                i {
+                  font-size: 20px;
+                  color: #afb1b5;
+                }
+              }
+            }
+          }
+        }
+      }
+      .all-posts {
+        article {
+          .post-info {
+
+          }
+          .post-date {
+
+          }
+          .lead {
+
+          }
+          hr {
+            color: #66686b;
+            height: 3px;
+          }
+        }
+      }
+    }
+  }
+}

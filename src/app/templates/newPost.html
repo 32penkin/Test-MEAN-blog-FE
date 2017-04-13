@@ -1,0 +1,17 @@
+<body>
+<div class="container new-post">
+  <form class="form-new-post">
+    <h1 class="text-center">Add new post</h1>
+    <p>
+      <label class="sr-only">Add new post</label>
+      <input type="text" placeholder="Name of the post" class="form-control" required autofocus ng-model="newName">
+    </p>
+
+    <p>
+      <label class="sr-only"></label>
+      <textarea class="form-control content-area" required ng-model="newContent"></textarea>
+    </p>
+    <button type="submit" class="btn btn-primary btn-block" ng-click="addNew()">Add</button>
+  </form>
+</div>
+</body>
