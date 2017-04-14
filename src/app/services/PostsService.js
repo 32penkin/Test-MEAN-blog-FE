@@ -2,17 +2,17 @@ export const PostsServiceName = 'postsService';
 export const PostsService = function ($http) {
 
   this.getPostsList = () => {
-    return $http.get('http://localhost:3000/bloglist');
+    return $http.get('https://powerful-brushlands-92814.herokuapp.com/bloglist');
   };
 
   this.getPostById = (id) => {
-    return $http.get('http://localhost:3000/bloglist/' + id);
+    return $http.get('https://powerful-brushlands-92814.herokuapp.com/bloglist/' + id);
   };
 
   this.addPost = (newName, newContent) => {
     let d = new Date();
     return $http
-      .post('http://localhost:3000/bloglist', {
+      .post('https://powerful-brushlands-92814.herokuapp.com/bloglist', {
         name: newName,
         content: newContent,
         date: d.toDateString() + ' ' + d.toLocaleTimeString()
