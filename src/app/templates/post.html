@@ -1,20 +1,17 @@
 <div class="container-fluid main-cont">
   <div class="row">
-    <div class="col-md-3 profile">
+    <div class="col-md-3 profile" ng-show="user">
       <aside>
         <img src="../../img/cat.jpg" alt="Cat image" class="img-circle">
-        <h4>Yauhen Penkin</h4>
+        <h4>{{user.firstname}} {{user.lastname}}</h4>
         <p>Podsos eng. @PODSOS</p>
         <hr>
-        <p>Share this page:</p>
-        <ul class="clearfix">
-          <li><a href="https://www.facebook.com/penkin.evgeniy"><i class="fa fa-facebook-square" aria-hidden="true"></i></a>
-          </li>
-          <li><a href="https://github.com/32penkin/"><i class="fa fa-github" aria-hidden="true"></i></a></li>
-          <li><a href="https://twitter.com/penkin.evgeniy"><i class="fa fa-twitter-square" aria-hidden="true"></i></a>
-          </li>
-          <li><a href="penkin.evgeniy@gmail.com"><i class="fa fa-at" aria-hidden="true"></i></a></li>
-        </ul>
+        <!--<p>My pages:</p>-->
+        <!--<ul class="clearfix">-->
+          <!--<li><a href="{{user.facebook}}"><i class="fa fa-facebook-square" aria-hidden="true"></i></a></li>-->
+          <!--<li><a href="{{user.github}}"><i class="fa fa-github" aria-hidden="true"></i></a></li>-->
+          <!--<li><a href="{{user.email}}"><i class="fa fa-at" aria-hidden="true"></i></a></li>-->
+        <!--</ul>-->
       </aside>
     </div>
     <div class="col-md-8">
@@ -27,19 +24,19 @@
         <h3 ng-if="comments.length !== 0">Comments:</h3>
         <div class="row">
           <div ng-repeat="comment in comments" class="comments">
-            <comment name="comment.name" content="comment.content" date="comment.date"></comment>
+            <comment content="comment.content" date="comment.date" author="comment.author"></comment>
           </div>
-          <form>
+          <form ng-show="user">
             <h3>Have your say</h3>
             <p>
               <label class="sr-only">Message</label>
               <textarea ng-model="comCont" class="form-control" placeholder="Message" id="message" required
                         autocomplete="off"></textarea>
             </p>
-            <p>
-              <label class="sr-only">Full Name</label>
-              <input ng-model="comName" type="text" class="form-control" placeholder="Full Name" required>
-            </p>
+            <!--<p>-->
+              <!--<label class="sr-only">Full Name</label>-->
+              <!--<input ng-model="comName" type="text" class="form-control" placeholder="Full Name" required>-->
+            <!--</p>-->
             <!--<p>-->
               <!--<label class="sr-only">Email Address</label>-->
               <!--<input type="email" class="form-control" placeholder="Email Address" required>-->

@@ -1,0 +1,33 @@
+<body>
+<div class="container register">
+  <form class="form-signin">
+    <h1 class="text-center">Registration</h1>
+    <p>
+      <label class="sr-only">Username</label>
+      <input ng-model="user.username" type="text" placeholder="Username" class="form-control" required autofocus>
+    </p>
+
+    <p>
+      <label class="sr-only">Password</label>
+      <input ng-model="user.password" type="password" placeholder="Password" class="form-control" required>
+    </p>
+    <p>
+      <label class="sr-only">Password2</label>
+      <input ng-model="user.password2" type="password" placeholder="Comfirm password" class="form-control" required>
+    </p>
+    <p>
+      <label class="sr-only">First name</label>
+      <input ng-model="user.firstname" type="text" placeholder="First name" class="form-control" required>
+    </p>
+    <p>
+      <label class="sr-only">Last name</label>
+      <input ng-model="user.lastname" type="text" placeholder="Last name" class="form-control" required>
+    </p>
+    <p>
+      <label class="sr-only">Email</label>
+      <input ng-model="user.email" type="email" placeholder="Email" class="form-control" required>
+    </p>
+    <button ng-click="register(user)" type="submit" class="btn btn-primary btn-block">Register</button>
+  </form>
+</div>
+</body>
