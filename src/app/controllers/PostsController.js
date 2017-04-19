@@ -1,5 +1,6 @@
 export const PostsCtrlName = 'postsCtrl';
 export const PostsCtrl = ($scope, $routeParams, postsService, commentsService) => {
+  $scope.$emit('LOAD');
   postsService
     .getPostsList()
     .then(function (response) {
@@ -10,5 +11,6 @@ export const PostsCtrl = ($scope, $routeParams, postsService, commentsService) =
           });
       });
       $scope.posts = response.data;
+      $scope.$emit('UNLOAD');
     });
 };
