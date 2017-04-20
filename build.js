@@ -11406,10 +11406,12 @@ Object.defineProperty(exports, "__esModule", {
 var LoginCtrlName = exports.LoginCtrlName = 'loginCtrl';
 var LoginCtrl = exports.LoginCtrl = function LoginCtrl($scope, $rootScope, usersService, $location) {
   $scope.login = function (user) {
-    usersService.login(user).then(function (response) {
-      $rootScope.currentUser = response.data;
-    });
-    $location.path('/profile');
+    if (user) {
+      usersService.login(user).then(function (response) {
+        $rootScope.currentUser = response.data;
+      });
+      $location.path('/profile');
+    }
   };
 };
 
@@ -11502,12 +11504,14 @@ Object.defineProperty(exports, "__esModule", {
 var RegistrationCtrlName = exports.RegistrationCtrlName = 'regCtrl';
 var RegistrationCtrl = exports.RegistrationCtrl = function RegistrationCtrl($scope, $rootScope, usersService, $location) {
   $scope.register = function (user) {
-    if (user.password === user.password2) {
-      usersService.register(user).then(function (response) {
-        $rootScope.currentUser = response.data;
-      });
-    } else alert('Passwords aren\'t the same!');
-    $location.path('/profile');
+    if (user) {
+      if (user.password === user.password2) {
+        usersService.register(user).then(function (response) {
+          $rootScope.currentUser = response.data;
+          $location.path('/profile');
+        });
+      } else alert('Passwords aren\'t the same!');
+    }
   };
 };
 
