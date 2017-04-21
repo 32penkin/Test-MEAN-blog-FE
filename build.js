@@ -11391,7 +11391,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var HomeCtrlName = exports.HomeCtrlName = 'homeCtrl';
-var HomeCtrl = exports.HomeCtrl = function HomeCtrl($scope) {};
+var HomeCtrl = exports.HomeCtrl = function HomeCtrl($scope, $rootScope, usersService) {
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
+  var currentUserToken = localStorage.getItem('currentUserToken');
+  if (currentUserToken) {
+    usersService.getCurrentUser(currentUserToken).then(function (responce) {
+      $scope.user = responce.data;
+    });
+  }
+};
 
 /***/ }),
 /* 14 */
@@ -11404,14 +11412,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var LoginCtrlName = exports.LoginCtrlName = 'loginCtrl';
-var LoginCtrl = exports.LoginCtrl = function LoginCtrl($scope, $rootScope, usersService, $location) {
+var LoginCtrl = exports.LoginCtrl = function LoginCtrl($scope, usersService, $location, $rootScope) {
   $scope.login = function (user) {
-    if (user) {
-      usersService.login(user).then(function (response) {
-        $rootScope.currentUser = response.data;
-      });
-      $location.path('/profile');
-    }
+    usersService.login(user).then(function (response) {
+      if (response.data.success) {
+        localStorage.setItem('currentUserToken', response.data.token);
+        $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
+        $location.path('/profile');
+      } else alert('Invalid username or password!');
+    });
   };
 };
 
@@ -11426,12 +11435,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var NavCtrlName = exports.NavCtrlName = 'navCtrl';
-var NavCtrl = exports.NavCtrl = function NavCtrl($scope, $rootScope, $location, usersService) {
+var NavCtrl = exports.NavCtrl = function NavCtrl($scope, $rootScope, $location) {
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
   $scope.logout = function () {
-    usersService.logout().then(function (responce) {
-      $rootScope.currentUser = null;
-      $location.path('/login');
-    });
+    localStorage.removeItem('currentUserToken');
+    $rootScope.checkUser = false;
+    $location.path('/login');
   };
 };
 
@@ -11446,9 +11455,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var NewPostCtrlName = exports.NewPostCtrlName = 'newPostCtrl';
-var NewPostCtrl = exports.NewPostCtrl = function NewPostCtrl($scope, postsService, $location) {
+var NewPostCtrl = exports.NewPostCtrl = function NewPostCtrl($scope, postsService, $location, $rootScope, usersService) {
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
+  var currentUserToken = localStorage.getItem('currentUserToken');
+  if (currentUserToken) {
+    usersService.getCurrentUser(currentUserToken).then(function (responce) {
+      $scope.user = responce.data;
+    });
+  }
   $scope.addNew = function () {
-    postsService.addPost($scope.newName, $scope.newContent).then(function (res) {
+    postsService.addPost($scope.newName, $scope.newContent, $scope.user).then(function (res) {
       $location.path('/posts/' + res.data._id);
     });
   };
@@ -11465,8 +11481,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var PostsCtrlName = exports.PostsCtrlName = 'postsCtrl';
-var PostsCtrl = exports.PostsCtrl = function PostsCtrl($scope, $routeParams, postsService, commentsService) {
+var PostsCtrl = exports.PostsCtrl = function PostsCtrl($scope, $routeParams, postsService, commentsService, usersService, $rootScope) {
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
   $scope.$emit('LOAD');
+  var currentUserToken = localStorage.getItem('currentUserToken');
+  if (currentUserToken) {
+    usersService.getCurrentUser(currentUserToken).then(function (responce) {
+      $scope.user = responce.data;
+    });
+  }
   postsService.getPostsList().then(function (response) {
     response.data.forEach(function (post) {
       commentsService.getCommentsByPostId(post._id).then(function (res) {
@@ -11489,7 +11512,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var ProfileCtrlName = exports.ProfileCtrlName = 'profileCtrl';
-var ProfileCtrl = exports.ProfileCtrl = function ProfileCtrl($scope, $rootScope) {};
+var ProfileCtrl = exports.ProfileCtrl = function ProfileCtrl($scope, $rootScope, usersService) {
+  $scope.$emit('LOAD');
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
+  var currentUserToken = localStorage.getItem('currentUserToken');
+  if (currentUserToken) {
+    usersService.getCurrentUser(currentUserToken).then(function (responce) {
+      $scope.user = responce.data;
+      $scope.$emit('UNLOAD');
+    });
+  }
+};
 
 /***/ }),
 /* 19 */
@@ -11504,14 +11537,10 @@ Object.defineProperty(exports, "__esModule", {
 var RegistrationCtrlName = exports.RegistrationCtrlName = 'regCtrl';
 var RegistrationCtrl = exports.RegistrationCtrl = function RegistrationCtrl($scope, $rootScope, usersService, $location) {
   $scope.register = function (user) {
-    if (user) {
-      if (user.password === user.password2) {
-        usersService.register(user).then(function (response) {
-          $rootScope.currentUser = response.data;
-          $location.path('/profile');
-        });
-      } else alert('Passwords aren\'t the same!');
-    }
+    if (user.password === user.password2) {
+      usersService.register(user).then(function (response) {});
+    } else alert('Passwords aren\'t the same!');
+    $location.path('/login');
   };
 };
 
@@ -11525,24 +11554,25 @@ var RegistrationCtrl = exports.RegistrationCtrl = function RegistrationCtrl($sco
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+// 'https://powerful-brushlands-92814.herokuapp.com/commentlist'
 var CommentsServiceName = exports.CommentsServiceName = 'commentsService';
 var CommentsService = exports.CommentsService = function CommentsService($http, $rootScope) {
 
   this.getComments = function () {
-    return $http.get('https://fathomless-mesa-71587.herokuapp.com/commentlist');
+    return $http.get('https://floating-wildwood-28200.herokuapp.com/commentlist');
   };
 
   this.getCommentsByPostId = function (postID) {
-    return $http.get('https://fathomless-mesa-71587.herokuapp.com/commentlist/' + postID);
+    return $http.get('https://floating-wildwood-28200.herokuapp.com/commentlist/' + postID);
   };
 
-  this.addCommentToPost = function (commentCont, postID) {
+  this.addCommentToPost = function (commentCont, postID, user) {
     var d = new Date();
-    $http.post('https://fathomless-mesa-71587.herokuapp.com/commentlist', {
+    $http.post('https://floating-wildwood-28200.herokuapp.com/commentlist', {
       content: commentCont,
       date: d.toDateString() + ' ' + d.toLocaleTimeString(),
       post_id: postID,
-      author: $rootScope.currentUser.username
+      author: user.username
     });
   };
 };
@@ -11557,24 +11587,25 @@ var CommentsService = exports.CommentsService = function CommentsService($http, 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+// 'https://powerful-brushlands-92814.herokuapp.com/bloglist'
 var PostsServiceName = exports.PostsServiceName = 'postsService';
 var PostsService = exports.PostsService = function PostsService($http, $rootScope) {
 
   this.getPostsList = function () {
-    return $http.get('https://fathomless-mesa-71587.herokuapp.com/bloglist');
+    return $http.get('https://floating-wildwood-28200.herokuapp.com/bloglist');
   };
 
   this.getPostById = function (id) {
-    return $http.get('https://fathomless-mesa-71587.herokuapp.com/bloglist/' + id);
+    return $http.get('https://floating-wildwood-28200.herokuapp.com/bloglist/' + id);
   };
 
-  this.addPost = function (newName, newContent) {
+  this.addPost = function (newName, newContent, user) {
     var d = new Date();
-    return $http.post('https://fathomless-mesa-71587.herokuapp.com/bloglist', {
+    return $http.post('https://floating-wildwood-28200.herokuapp.com/bloglist', {
       name: newName,
       content: newContent,
       date: d.toDateString() + ' ' + d.toLocaleTimeString(),
-      author: $rootScope.currentUser.username
+      author: user.username
     });
   };
 };
@@ -11593,15 +11624,21 @@ var UsersServiceName = exports.UsersServiceName = 'usersService';
 var UsersService = exports.UsersService = function UsersService($http) {
 
   this.login = function (user) {
-    return $http.post('https://fathomless-mesa-71587.herokuapp.com/userlist', user);
+    return $http.post('https://floating-wildwood-28200.herokuapp.com/userlist', user);
   };
 
   this.register = function (user) {
-    return $http.post('https://fathomless-mesa-71587.herokuapp.com/register', user);
+    return $http.post('https://floating-wildwood-28200.herokuapp.com/register', user);
   };
 
   this.logout = function () {
-    return $http.post('https://fathomless-mesa-71587.herokuapp.com/logout');
+    return $http.post('https://floating-wildwood-28200.herokuapp.com/logout');
+  };
+
+  this.getCurrentUser = function (currentUserToken) {
+    return $http.get('https://floating-wildwood-28200.herokuapp.com/profile', {
+      headers: { 'Authorization': currentUserToken }
+    });
   };
 };
 
@@ -11627,8 +11664,8 @@ __webpack_require__(45)
 /* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/home.html';
-var html = "<body>\r\n<div class=\"container home-page\">\r\n  <div class=\"profile home\">\r\n    <aside>\r\n      <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n      <h4>{{currentUser.firstname}} {{currentUser.lastname}}</h4>\r\n      <p class=\"mn\">Junior podsos @PODSOSbl</p>\r\n      <hr>\r\n      <!--<p>My pages:</p>-->\r\n      <!--<ul>-->\r\n        <!--<li><a href=\"{{currentUsrer.facebook}}\"><i class=\"fa fa-facebook-square\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--<li><a href=\"{{currentUsrer.github}}\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--<li><a href=\"{{currentUsrer.email}}\"><i class=\"fa fa-at\" aria-hidden=\"true\"></i></a></li>-->\r\n      <!--</ul>-->\r\n    </aside>\r\n  </div>\r\n</div>\r\n</body>\r\n\r\n\r\n";
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/home.html';
+var html = "<body>\r\n<div class=\"container home-page\">\r\n  <div class=\"profile home\">\r\n    <aside>\r\n      <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n      <h4>{{user.firstname}} {{user.lastname}}</h4>\r\n      <p class=\"mn\">Junior podsos @PODSOSbl</p>\r\n      <hr>\r\n      <!--<p>My pages:</p>-->\r\n      <!--<ul>-->\r\n        <!--<li><a href=\"{{currentUsrer.facebook}}\"><i class=\"fa fa-facebook-square\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--<li><a href=\"{{currentUsrer.github}}\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--<li><a href=\"{{currentUsrer.email}}\"><i class=\"fa fa-at\" aria-hidden=\"true\"></i></a></li>-->\r\n      <!--</ul>-->\r\n    </aside>\r\n  </div>\r\n</div>\r\n</body>\r\n\r\n\r\n";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -11636,8 +11673,8 @@ module.exports = path;
 /* 25 */
 /***/ (function(module, exports) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/login.html';
-var html = "<body>\r\n<div class=\"container login\">\r\n  <form class=\"form-signin\">\r\n    <h1 class=\"text-center\">Sign in</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"login(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Sign in</button>\r\n  </form>\r\n</div>\r\n</body>\r\n";
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/login.html';
+var html = "<body>\r\n<div class=\"container login\">\r\n  <form class=\"form-signin\">\r\n    <h1 class=\"text-center\">Sign in</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"login(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Sign in</button>\r\n  </form>\r\n</div>\r\n<!--<div class=\"container loggedin\" ng-show=\"token\">-->\r\n  <!--<h2>OK! You are successfully logged in!</h2>-->\r\n<!--</div>-->\r\n</body>\r\n";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -11645,7 +11682,7 @@ module.exports = path;
 /* 26 */
 /***/ (function(module, exports) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/newPost.html';
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/newPost.html';
 var html = "<body>\r\n<div class=\"container new-post\">\r\n  <form class=\"form-new-post\">\r\n    <h1 class=\"text-center\">Add new post</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Add new post</label>\r\n      <input type=\"text\" placeholder=\"Name of the post\" class=\"form-control\" required autofocus ng-model=\"newName\">\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\"></label>\r\n      <textarea class=\"form-control content-area\" required ng-model=\"newContent\"></textarea>\r\n    </p>\r\n    <button type=\"submit\" class=\"btn btn-primary btn-block\" ng-click=\"addNew()\">Add</button>\r\n  </form>\r\n</div>\r\n</body>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
@@ -11654,8 +11691,8 @@ module.exports = path;
 /* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/posts.html';
-var html = "<body>\r\n<div class=\"container-fluid main-cont\">\r\n  <div us-spinner=\"{radius:30, width:8, length: 16}\" ng-show=\"loading\"></div>\r\n  <div class=\"row\">\r\n    <div class=\"col-md-3 profile\"  ng-show=\"currentUser\">\r\n      <aside>\r\n        <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n        <h4>{{currentUser.firstname}} {{currentUser.lastname}}</h4>\r\n        <p>Podsos eng. @PODSOS</p>\r\n        <hr>\r\n        <!---------------------------for debugging---------------------------------->\r\n        <!--<button ng-click=\"showPosts()\">Show posts</button>-->\r\n        <!--<button ng-click=\"showPostsId()\">Show posts IDs</button>-->\r\n        <!--<button ng-click=\"showCommentsId()\">Show comments IDs</button>-->\r\n        <!--<button ng-click=\"CommentsCount()\">Show comments number</button>-->\r\n        <!------------------------------------------------------------->\r\n        <!--<p>My pages:</p>-->\r\n        <!--<ul class=\"clearfix\">-->\r\n          <!--<li><a href=\"{{currentUsrer.facebook}}\"><i class=\"fa fa-facebook-square\" aria-hidden=\"true\"></i></a></li>-->\r\n          <!--<li><a href=\"{{currentUsrer.github}}\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a></li>-->\r\n          <!--<li><a href=\"{{currentUsrer.email}}\"><i class=\"fa fa-at\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--</ul>-->\r\n      </aside>\r\n    </div>\r\n    <div class=\"col-md-8 all-posts\">\r\n      <!--<article ng-repeat=\"post in posts\">-->\r\n      <h1 ng-show=\"posts.length === 0\" class=\"posts-count-header\">There are no posts</h1>\r\n      <h1 ng-show=\"posts.length === 1\" class=\"posts-count-header\">There are 1 post:</h1>\r\n      <h1 ng-show=\"posts.length !== 0 && posts.length !== 1\" class=\"posts-count-header\">There are {{posts.length}}\r\n        posts</h1>\r\n      <article dir-paginate=\"post in posts | itemsPerPage: 3\">\r\n      <!--<article ng-repeat=\"post in posts\">-->\r\n        <header class=\"post-info\"><a href=\"#!/posts/{{post._id}}\"><h2>{{post.name}}</h2></a></header>\r\n        <footer class=\"post-date\">\r\n          <small><b>Posted on: </b> {{post.date}} <b>by: </b>{{post.author}}</small>\r\n          <br>\r\n          <small ng-if=\"post.commentsCount === 0\">Haven't commented yet</small>\r\n          <small ng-if=\"post.commentsCount === 1\">Commented <b>once</b></small>\r\n          <small ng-if=\"post.commentsCount !== 0 && post.commentsCount !== 1\">Commented <b>{{post.commentsCount}}</b> times</small>\r\n        </footer>\r\n\r\n        <div class=\"lead\">{{post.content}}<a href=\"#!/posts/{{post._id}}\"> Read more</a>\r\n        </div>\r\n        <hr>\r\n      </article>\r\n      <dir-pagination-controls></dir-pagination-controls>\r\n    </div>\r\n  </div>\r\n</div>\r\n</body>";
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/posts.html';
+var html = "<body>\r\n<div class=\"container-fluid main-cont\">\r\n  <div us-spinner=\"{radius:30, width:8, length: 16}\" ng-show=\"loading\"></div>\r\n  <div class=\"row\">\r\n    <div class=\"col-md-3 profile\"  ng-show=\"user\">\r\n      <aside>\r\n        <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n        <h4>{{user.firstname}} {{user.lastname}}</h4>\r\n        <p>Podsos eng. @PODSOS</p>\r\n        <hr>\r\n      </aside>\r\n    </div>\r\n    <div class=\"col-md-8 all-posts\">\r\n      <!--<article ng-repeat=\"post in posts\">-->\r\n      <h1 ng-show=\"posts.length === 0\" class=\"posts-count-header\">There are no posts</h1>\r\n      <h1 ng-show=\"posts.length === 1\" class=\"posts-count-header\">There are 1 post:</h1>\r\n      <h1 ng-show=\"posts.length !== 0 && posts.length !== 1\" class=\"posts-count-header\">There are {{posts.length}}\r\n        posts</h1>\r\n      <article dir-paginate=\"post in posts | itemsPerPage: 3\">\r\n      <!--<article ng-repeat=\"post in posts\">-->\r\n        <header class=\"post-info\"><a href=\"#!/posts/{{post._id}}\"><h2>{{post.name}}</h2></a></header>\r\n        <footer class=\"post-date\">\r\n          <small><b>Posted on: </b> {{post.date}} <b>by: </b>{{post.author}}</small>\r\n          <br>\r\n          <small ng-if=\"post.commentsCount === 0\">Haven't commented yet</small>\r\n          <small ng-if=\"post.commentsCount === 1\">Commented <b>once</b></small>\r\n          <small ng-if=\"post.commentsCount !== 0 && post.commentsCount !== 1\">Commented <b>{{post.commentsCount}}</b> times</small>\r\n        </footer>\r\n\r\n        <div class=\"lead\">{{post.content}}<a href=\"#!/posts/{{post._id}}\"> Read more</a>\r\n        </div>\r\n        <hr>\r\n      </article>\r\n      <dir-pagination-controls></dir-pagination-controls>\r\n    </div>\r\n  </div>\r\n</div>\r\n</body>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -11663,8 +11700,8 @@ module.exports = path;
 /* 28 */
 /***/ (function(module, exports) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/profile.html';
-var html = "<body>\r\n<div class=\"info\">\r\n  <h2>Username: {{currentUser.username}}</h2>\r\n  <h2>First name: {{currentUser.firstname}}</h2>\r\n  <h2>Last name: {{currentUser.lastname}}</h2>\r\n  <h2>Email: {{currentUser.email}}</h2>\r\n</div>\r\n</body>";
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/profile.html';
+var html = "<body>\r\n<div class=\"info\">\r\n  <div us-spinner=\"{radius:30, width:8, length: 16}\" ng-show=\"loading\"></div>\r\n  <h2>Username: {{user.username}}</h2>\r\n  <h2>First name: {{user.firstname}}</h2>\r\n  <h2>Last name: {{user.lastname}}</h2>\r\n  <h2>Email: {{user.email}}</h2>\r\n</div>\r\n</body>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -11672,7 +11709,7 @@ module.exports = path;
 /* 29 */
 /***/ (function(module, exports) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/registration.html';
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/registration.html';
 var html = "<body>\r\n<div class=\"container register\">\r\n  <form class=\"form-signin\">\r\n    <h1 class=\"text-center\">Registration</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Password2</label>\r\n      <input ng-model=\"user.password2\" type=\"password\" placeholder=\"Comfirm password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">First name</label>\r\n      <input ng-model=\"user.firstname\" type=\"text\" placeholder=\"First name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Last name</label>\r\n      <input ng-model=\"user.lastname\" type=\"text\" placeholder=\"Last name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Email</label>\r\n      <input ng-model=\"user.email\" type=\"email\" placeholder=\"Email\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"register(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Register</button>\r\n  </form>\r\n</div>\r\n</body>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
@@ -47852,13 +47889,18 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var PostCtrlName = exports.PostCtrlName = 'postCtrl';
-var PostCtrl = exports.PostCtrl = function PostCtrl($scope, $routeParams, postsService, commentsService, $rootScope) {
+var PostCtrl = exports.PostCtrl = function PostCtrl($scope, $routeParams, postsService, commentsService, $rootScope, usersService) {
+  $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
   $scope.$emit('LOAD');
-  $scope.user = $rootScope.currentUser;
+  var currentUserToken = localStorage.getItem('currentUserToken');
+  if (currentUserToken) {
+    usersService.getCurrentUser(currentUserToken).then(function (responce) {
+      $scope.user = responce.data;
+    });
+  }
   var postid = $routeParams.postId;
   postsService.getPostById(postid).then(function (response) {
     $scope.post = response.data;
-    $scope.$emit('UNLOAD');
   });
 
   commentsService.getCommentsByPostId(postid).then(function (response) {
@@ -47871,7 +47913,7 @@ var PostCtrl = exports.PostCtrl = function PostCtrl($scope, $routeParams, postsS
       $scope.comments = response.data;
       $scope.$emit('UNLOAD');
     });
-    commentsService.addCommentToPost($scope.comCont, postid);
+    commentsService.addCommentToPost($scope.comCont, postid, $scope.user);
     commentsService.getCommentsByPostId(postid).then(function (response) {
       $scope.comments = response.data;
       $scope.$emit('UNLOAD');
@@ -47991,9 +48033,9 @@ var app = _angular2.default.module('BlogApp', ['ngRoute', 'angularCSS', 'angular
 
 app.component(_post3.PostComponentName, _post3.PostComponent).component(_comment.CommentComponentName, _comment.CommentComponent).service(_PostsService.PostsServiceName, _PostsService.PostsService).service(_CommentService.CommentsServiceName, _CommentService.CommentsService).service(_UsersService.UsersServiceName, _UsersService.UsersService).controller(_HomeController.HomeCtrlName, _HomeController.HomeCtrl).controller(_PostsController.PostsCtrlName, _PostsController.PostsCtrl).controller(_NewPostController.NewPostCtrlName, _NewPostController.NewPostCtrl).controller(_LoginController.LoginCtrlName, _LoginController.LoginCtrl).controller(_RegistrationController.RegistrationCtrlName, _RegistrationController.RegistrationCtrl).controller(_ProfileController.ProfileCtrlName, _ProfileController.ProfileCtrl).controller(_NavigationController.NavCtrlName, _NavigationController.NavCtrl).controller(_AppController.AppCtrlName, _AppController.AppCtrl).config(function ($locationProvider, $routeProvider) {
   $routeProvider.when('/', {
-    templateUrl: _home2.default,
-    controller: 'homeCtrl',
-    css: _home4.default
+    templateUrl: _posts2.default,
+    controller: 'postsCtrl',
+    css: _posts4.default
   }).when('/home', {
     templateUrl: _home2.default,
     controller: 'homeCtrl',
@@ -50495,7 +50537,7 @@ exports = module.exports = __webpack_require__(2)();
 
 
 // module
-exports.push([module.i, "body .login {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .login .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n", ""]);
+exports.push([module.i, "body .login {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .login .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n\nbody .loggedin {\n  margin-top: 170px;\n  text-align: center; }\n", ""]);
 
 // exports
 
@@ -50648,7 +50690,7 @@ module.exports = __webpack_require__.p + "fee66e712a8a08eef5805a46892932ad.woff"
 /* 76 */
 /***/ (function(module, exports) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/comment.html';
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/comment.html';
 var html = "<body>\r\n<p>{{$ctrl.content}}</p>\r\n<footer>\r\n  <small><b>{{$ctrl.author}}</b> {{$ctrl.date}}</small>\r\n</footer>\r\n<hr>\r\n</body>\r\n\r\n";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
@@ -50657,8 +50699,8 @@ module.exports = path;
 /* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var path = 'D:/NWork/JS/Blogs/27 for deploy/fe/src/app/templates/post.html';
-var html = "<div class=\"container-fluid main-cont\">\r\n  <div us-spinner=\"{radius:30, width:8, length: 16}\" ng-show=\"loading\"></div>\r\n  <div class=\"row\">\r\n    <div class=\"col-md-3 profile\" ng-show=\"user\">\r\n      <aside>\r\n        <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n        <h4>{{user.firstname}} {{user.lastname}}</h4>\r\n        <p>Podsos eng. @PODSOS</p>\r\n        <hr>\r\n        <!--<p>My pages:</p>-->\r\n        <!--<ul class=\"clearfix\">-->\r\n          <!--<li><a href=\"{{user.facebook}}\"><i class=\"fa fa-facebook-square\" aria-hidden=\"true\"></i></a></li>-->\r\n          <!--<li><a href=\"{{user.github}}\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a></li>-->\r\n          <!--<li><a href=\"{{user.email}}\"><i class=\"fa fa-at\" aria-hidden=\"true\"></i></a></li>-->\r\n        <!--</ul>-->\r\n      </aside>\r\n    </div>\r\n    <div class=\"col-md-8\">\r\n      <article>\r\n        <h1>{{post.name}}</h1>\r\n        <div class=\"lead\">{{post.content}}</div>\r\n      </article>\r\n      <hr class=\"line\">\r\n      <div class=\"for-comments\">\r\n        <h3 ng-if=\"comments.length !== 0\">Comments:</h3>\r\n        <div class=\"row\">\r\n          <div ng-repeat=\"comment in comments\" class=\"comments\">\r\n            <comment content=\"comment.content\" date=\"comment.date\" author=\"comment.author\"></comment>\r\n          </div>\r\n          <form ng-show=\"user\">\r\n            <h3>Have your say</h3>\r\n            <p>\r\n              <label class=\"sr-only\">Message</label>\r\n              <textarea ng-model=\"comCont\" class=\"form-control\" placeholder=\"Message\" id=\"message\" required\r\n                        autocomplete=\"off\"></textarea>\r\n            </p>\r\n            <!--<p>-->\r\n              <!--<label class=\"sr-only\">Full Name</label>-->\r\n              <!--<input ng-model=\"comName\" type=\"text\" class=\"form-control\" placeholder=\"Full Name\" required>-->\r\n            <!--</p>-->\r\n            <!--<p>-->\r\n              <!--<label class=\"sr-only\">Email Address</label>-->\r\n              <!--<input type=\"email\" class=\"form-control\" placeholder=\"Email Address\" required>-->\r\n            <!--</p>-->\r\n            <p>\r\n              <button ng-click=\"addNewComment()\" class=\"btn btn-primary\">Send messsage</button>\r\n            </p>\r\n          </form>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>";
+var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/post.html';
+var html = "<div class=\"container-fluid main-cont\">\r\n  <div us-spinner=\"{radius:30, width:8, length: 16}\" ng-show=\"loading\"></div>\r\n  <div class=\"row\">\r\n    <div class=\"col-md-3 profile\" ng-show=\"user\">\r\n      <aside>\r\n        <img src=\"" + __webpack_require__(3) + "\" alt=\"Cat image\" class=\"img-circle\">\r\n        <h4>{{user.firstname}} {{user.lastname}}</h4>\r\n        <p>Podsos eng. @PODSOS</p>\r\n        <hr>\r\n      </aside>\r\n    </div>\r\n    <div class=\"col-md-8\">\r\n      <article>\r\n        <h1>{{post.name}}</h1>\r\n        <div class=\"lead\">{{post.content}}</div>\r\n      </article>\r\n      <hr class=\"line\">\r\n      <div class=\"for-comments\">\r\n        <h3 ng-if=\"comments.length !== 0\">Comments:</h3>\r\n        <div class=\"row\">\r\n          <div ng-repeat=\"comment in comments\" class=\"comments\">\r\n            <comment content=\"comment.content\" date=\"comment.date\" author=\"comment.author\"></comment>\r\n          </div>\r\n          <form ng-show=\"user\">\r\n            <h3>Have your say</h3>\r\n            <p>\r\n              <label class=\"sr-only\">Message</label>\r\n              <textarea ng-model=\"comCont\" class=\"form-control\" placeholder=\"Message\" id=\"message\" required\r\n                        autocomplete=\"off\"></textarea>\r\n            </p>\r\n            <p>\r\n              <button ng-click=\"addNewComment()\" class=\"btn btn-primary\">Send messsage</button>\r\n            </p>\r\n          </form>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
