@@ -2,24 +2,12 @@
 <div class="container-fluid main-cont">
   <div us-spinner="{radius:30, width:8, length: 16}" ng-show="loading"></div>
   <div class="row">
-    <div class="col-md-3 profile"  ng-show="currentUser">
+    <div class="col-md-3 profile"  ng-show="user">
       <aside>
         <img src="../../img/cat.jpg" alt="Cat image" class="img-circle">
-        <h4>{{currentUser.firstname}} {{currentUser.lastname}}</h4>
+        <h4>{{user.firstname}} {{user.lastname}}</h4>
         <p>Podsos eng. @PODSOS</p>
         <hr>
-        <!---------------------------for debugging---------------------------------->
-        <!--<button ng-click="showPosts()">Show posts</button>-->
-        <!--<button ng-click="showPostsId()">Show posts IDs</button>-->
-        <!--<button ng-click="showCommentsId()">Show comments IDs</button>-->
-        <!--<button ng-click="CommentsCount()">Show comments number</button>-->
-        <!------------------------------------------------------------->
-        <!--<p>My pages:</p>-->
-        <!--<ul class="clearfix">-->
-          <!--<li><a href="{{currentUsrer.facebook}}"><i class="fa fa-facebook-square" aria-hidden="true"></i></a></li>-->
-          <!--<li><a href="{{currentUsrer.github}}"><i class="fa fa-github" aria-hidden="true"></i></a></li>-->
-          <!--<li><a href="{{currentUsrer.email}}"><i class="fa fa-at" aria-hidden="true"></i></a></li>-->
-        <!--</ul>-->
       </aside>
     </div>
     <div class="col-md-8 all-posts">

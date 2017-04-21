@@ -64,9 +64,9 @@ app
   .config(($locationProvider, $routeProvider) => {
     $routeProvider
       .when('/', {
-        templateUrl: TemplateHomeUrl,
-        controller: 'homeCtrl',
-        css: HomeStyle
+        templateUrl: TemplatePostsUrl,
+        controller: 'postsCtrl',
+        css: PostsStyle
       })
       .when('/home', {
         templateUrl: TemplateHomeUrl,

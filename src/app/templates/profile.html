@@ -1,8 +1,9 @@
 <body>
 <div class="info">
-  <h2>Username: {{currentUser.username}}</h2>
-  <h2>First name: {{currentUser.firstname}}</h2>
-  <h2>Last name: {{currentUser.lastname}}</h2>
-  <h2>Email: {{currentUser.email}}</h2>
+  <div us-spinner="{radius:30, width:8, length: 16}" ng-show="loading"></div>
+  <h2>Username: {{user.username}}</h2>
+  <h2>First name: {{user.firstname}}</h2>
+  <h2>Last name: {{user.lastname}}</h2>
+  <h2>Email: {{user.email}}</h2>
 </div>
 </body>
