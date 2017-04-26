@@ -1,6 +1,12 @@
 <body>
 <div class="container login">
   <form class="form-signin">
+    <div ng-show="successMessage" class="alert alert-success">
+      <strong>{{successMessage}}</strong>
+    </div>
+    <div ng-show="alertMessage" class="alert alert-warning">
+      <strong>{{alertMessage}}</strong>
+    </div>
     <h1 class="text-center">Sign in</h1>
     <p>
       <label class="sr-only">Username</label>

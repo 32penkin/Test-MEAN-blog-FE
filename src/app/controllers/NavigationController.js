@@ -4,6 +4,7 @@ export const NavCtrl = ($scope, $rootScope, $location) => {
   $scope.logout = function () {
     localStorage.removeItem('currentUserToken');
     $rootScope.checkUser = false;
+    $rootScope.successMessage = null;
     $location.path('/login');
   };
 };

@@ -1,6 +1,9 @@
 <body>
 <div class="container register">
   <form class="form-signin">
+    <div ng-show="alertMessage" class="alert alert-warning">
+      <strong>{{alertMessage}}</strong>
+    </div>
     <h1 class="text-center">Registration</h1>
     <p>
       <label class="sr-only">Username</label>

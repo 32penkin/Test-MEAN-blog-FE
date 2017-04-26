@@ -9,7 +9,9 @@ export const LoginCtrl = ($scope, usersService, $location, $rootScope) => {
           $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
           $location.path('/profile');
         }
-        else alert('Invalid username or password!');
+        else {
+          $scope.alertMessage = 'Invalid username or password!';
+        }
       });
   }
 };
