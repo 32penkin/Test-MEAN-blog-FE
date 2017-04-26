@@ -11419,7 +11419,9 @@ var LoginCtrl = exports.LoginCtrl = function LoginCtrl($scope, usersService, $lo
         localStorage.setItem('currentUserToken', response.data.token);
         $rootScope.checkUser = localStorage.getItem('currentUserToken') ? true : false;
         $location.path('/profile');
-      } else alert('Invalid username or password!');
+      } else {
+        $scope.alertMessage = 'Invalid username or password!';
+      }
     });
   };
 };
@@ -11440,6 +11442,7 @@ var NavCtrl = exports.NavCtrl = function NavCtrl($scope, $rootScope, $location) 
   $scope.logout = function () {
     localStorage.removeItem('currentUserToken');
     $rootScope.checkUser = false;
+    $rootScope.successMessage = null;
     $location.path('/login');
   };
 };
@@ -11538,9 +11541,15 @@ var RegistrationCtrlName = exports.RegistrationCtrlName = 'regCtrl';
 var RegistrationCtrl = exports.RegistrationCtrl = function RegistrationCtrl($scope, $rootScope, usersService, $location) {
   $scope.register = function (user) {
     if (user.password === user.password2) {
-      usersService.register(user).then(function (response) {});
-    } else alert('Passwords aren\'t the same!');
-    $location.path('/login');
+      usersService.register(user).then(function (response) {
+        if (response) {
+          $rootScope.successMessage = 'You are successfully registered!';
+        }
+      });
+      $location.path('/login');
+    } else {
+      $scope.alertMessage = 'Passwords aren\'t the same!';
+    }
   };
 };
 
@@ -11554,21 +11563,20 @@ var RegistrationCtrl = exports.RegistrationCtrl = function RegistrationCtrl($sco
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-// 'https://powerful-brushlands-92814.herokuapp.com/commentlist'
 var CommentsServiceName = exports.CommentsServiceName = 'commentsService';
 var CommentsService = exports.CommentsService = function CommentsService($http, $rootScope) {
 
   this.getComments = function () {
-    return $http.get('https://floating-wildwood-28200.herokuapp.com/commentlist');
+    return $http.get('https://polar-chamber-14511.herokuapp.com/commentlist');
   };
 
   this.getCommentsByPostId = function (postID) {
-    return $http.get('https://floating-wildwood-28200.herokuapp.com/commentlist/' + postID);
+    return $http.get('https://polar-chamber-14511.herokuapp.com/commentlist/' + postID);
   };
 
   this.addCommentToPost = function (commentCont, postID, user) {
     var d = new Date();
-    $http.post('https://floating-wildwood-28200.herokuapp.com/commentlist', {
+    $http.post('https://polar-chamber-14511.herokuapp.com/commentlist', {
       content: commentCont,
       date: d.toDateString() + ' ' + d.toLocaleTimeString(),
       post_id: postID,
@@ -11587,21 +11595,20 @@ var CommentsService = exports.CommentsService = function CommentsService($http, 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-// 'https://powerful-brushlands-92814.herokuapp.com/bloglist'
 var PostsServiceName = exports.PostsServiceName = 'postsService';
 var PostsService = exports.PostsService = function PostsService($http, $rootScope) {
 
   this.getPostsList = function () {
-    return $http.get('https://floating-wildwood-28200.herokuapp.com/bloglist');
+    return $http.get('https://polar-chamber-14511.herokuapp.com/bloglist');
   };
 
   this.getPostById = function (id) {
-    return $http.get('https://floating-wildwood-28200.herokuapp.com/bloglist/' + id);
+    return $http.get('https://polar-chamber-14511.herokuapp.com/bloglist/' + id);
   };
 
   this.addPost = function (newName, newContent, user) {
     var d = new Date();
-    return $http.post('https://floating-wildwood-28200.herokuapp.com/bloglist', {
+    return $http.post('https://polar-chamber-14511.herokuapp.com/bloglist', {
       name: newName,
       content: newContent,
       date: d.toDateString() + ' ' + d.toLocaleTimeString(),
@@ -11624,19 +11631,19 @@ var UsersServiceName = exports.UsersServiceName = 'usersService';
 var UsersService = exports.UsersService = function UsersService($http) {
 
   this.login = function (user) {
-    return $http.post('https://floating-wildwood-28200.herokuapp.com/userlist', user);
+    return $http.post('https://polar-chamber-14511.herokuapp.com/userlist', user);
   };
 
   this.register = function (user) {
-    return $http.post('https://floating-wildwood-28200.herokuapp.com/register', user);
+    return $http.post('https://polar-chamber-14511.herokuapp.com/register', user);
   };
 
   this.logout = function () {
-    return $http.post('https://floating-wildwood-28200.herokuapp.com/logout');
+    return $http.post('https://polar-chamber-14511.herokuapp.com/logout');
   };
 
   this.getCurrentUser = function (currentUserToken) {
-    return $http.get('https://floating-wildwood-28200.herokuapp.com/profile', {
+    return $http.get('https://polar-chamber-14511.herokuapp.com/profile', {
       headers: { 'Authorization': currentUserToken }
     });
   };
@@ -11674,7 +11681,7 @@ module.exports = path;
 /***/ (function(module, exports) {
 
 var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/login.html';
-var html = "<body>\r\n<div class=\"container login\">\r\n  <form class=\"form-signin\">\r\n    <h1 class=\"text-center\">Sign in</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"login(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Sign in</button>\r\n  </form>\r\n</div>\r\n<!--<div class=\"container loggedin\" ng-show=\"token\">-->\r\n  <!--<h2>OK! You are successfully logged in!</h2>-->\r\n<!--</div>-->\r\n</body>\r\n";
+var html = "<body>\r\n<div class=\"container login\">\r\n  <form class=\"form-signin\">\r\n    <div ng-show=\"successMessage\" class=\"alert alert-success\">\r\n      <strong>{{successMessage}}</strong>\r\n    </div>\r\n    <div ng-show=\"alertMessage\" class=\"alert alert-warning\">\r\n      <strong>{{alertMessage}}</strong>\r\n    </div>\r\n    <h1 class=\"text-center\">Sign in</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"login(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Sign in</button>\r\n  </form>\r\n</div>\r\n<!--<div class=\"container loggedin\" ng-show=\"token\">-->\r\n  <!--<h2>OK! You are successfully logged in!</h2>-->\r\n<!--</div>-->\r\n</body>\r\n";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -11710,7 +11717,7 @@ module.exports = path;
 /***/ (function(module, exports) {
 
 var path = 'D:/NWork/JS/Blogs/28 for deploy/fe/src/app/templates/registration.html';
-var html = "<body>\r\n<div class=\"container register\">\r\n  <form class=\"form-signin\">\r\n    <h1 class=\"text-center\">Registration</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Password2</label>\r\n      <input ng-model=\"user.password2\" type=\"password\" placeholder=\"Comfirm password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">First name</label>\r\n      <input ng-model=\"user.firstname\" type=\"text\" placeholder=\"First name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Last name</label>\r\n      <input ng-model=\"user.lastname\" type=\"text\" placeholder=\"Last name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Email</label>\r\n      <input ng-model=\"user.email\" type=\"email\" placeholder=\"Email\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"register(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Register</button>\r\n  </form>\r\n</div>\r\n</body>";
+var html = "<body>\r\n<div class=\"container register\">\r\n  <form class=\"form-signin\">\r\n    <div ng-show=\"alertMessage\" class=\"alert alert-warning\">\r\n      <strong>{{alertMessage}}</strong>\r\n    </div>\r\n    <h1 class=\"text-center\">Registration</h1>\r\n    <p>\r\n      <label class=\"sr-only\">Username</label>\r\n      <input ng-model=\"user.username\" type=\"text\" placeholder=\"Username\" class=\"form-control\" required autofocus>\r\n    </p>\r\n\r\n    <p>\r\n      <label class=\"sr-only\">Password</label>\r\n      <input ng-model=\"user.password\" type=\"password\" placeholder=\"Password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Password2</label>\r\n      <input ng-model=\"user.password2\" type=\"password\" placeholder=\"Comfirm password\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">First name</label>\r\n      <input ng-model=\"user.firstname\" type=\"text\" placeholder=\"First name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Last name</label>\r\n      <input ng-model=\"user.lastname\" type=\"text\" placeholder=\"Last name\" class=\"form-control\" required>\r\n    </p>\r\n    <p>\r\n      <label class=\"sr-only\">Email</label>\r\n      <input ng-model=\"user.email\" type=\"email\" placeholder=\"Email\" class=\"form-control\" required>\r\n    </p>\r\n    <button ng-click=\"register(user)\" type=\"submit\" class=\"btn btn-primary btn-block\">Register</button>\r\n  </form>\r\n</div>\r\n</body>";
 window.angular.module('ng').run(['$templateCache', function(c) { c.put(path, html) }]);
 module.exports = path;
 
@@ -50537,7 +50544,7 @@ exports = module.exports = __webpack_require__(2)();
 
 
 // module
-exports.push([module.i, "body .login {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .login .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n\nbody .loggedin {\n  margin-top: 170px;\n  text-align: center; }\n", ""]);
+exports.push([module.i, "body .login {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .login .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n    body .login .form-signin .alert-success {\n      text-align: center; }\n    body .login .form-signin .alert-warning {\n      text-align: center; }\n\nbody .loggedin {\n  margin-top: 170px;\n  text-align: center; }\n", ""]);
 
 // exports
 
@@ -50607,7 +50614,7 @@ exports = module.exports = __webpack_require__(2)();
 
 
 // module
-exports.push([module.i, "body .register {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .register .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n", ""]);
+exports.push([module.i, "body .register {\n  display: table;\n  max-width: 400px;\n  height: 100%;\n  min-height: 100%;\n  margin-top: 170px; }\n  body .register .form-signin {\n    display: table-cell;\n    vertical-align: middle; }\n    body .register .form-signin .alert {\n      text-align: center; }\n", ""]);
 
 // exports
 
